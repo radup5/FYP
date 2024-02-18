@@ -3,7 +3,7 @@ import datetime
 
 
 
-exchange_min_price = 1
+exchange_min_price = 0
 exchange_max_price = 1000
 # to avoid floting point error, it is suggested 
 # to use int values for the ticksize

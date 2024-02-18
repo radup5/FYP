@@ -57,7 +57,7 @@ def run_simulation(type, operations, traders, runs):
 def plot_simulations():
 
     operations = [1000, 10000, 50000, 100000]
-    traders = 10
+    traders = 100
     runs = 3
     times = [[], [], []]
 

@@ -17,7 +17,9 @@ def empty_OrderBookSide():
 
 @pytest.fixture
 def empty_OrderBook():
-    return e.OrderBook()
+    buy_side = e.OrderBookSide(e.OrderSide.BUY)
+    sell_side = e.OrderBookSide(e.OrderSide.SELL)
+    return e.OrderBook(buy_side, sell_side)
 
 
 
