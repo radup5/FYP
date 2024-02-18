@@ -2,3 +2,4 @@ datetime==5.4
 matplotlib==3.7.2
 mock==5.1.0
 pytest==8.0.0
+pytest-mock==3.12.0
