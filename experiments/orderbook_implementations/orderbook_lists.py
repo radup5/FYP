@@ -1,4 +1,4 @@
-from exchange_extended import exchange_min_price, exchange_max_price, ticksize, Order, OrderSide, OrderBook, OrderBookSideI
+from exchange import exchange_min_price, exchange_max_price, ticksize, Order, OrderSide, OrderBook, OrderBookSideI
 
 
 

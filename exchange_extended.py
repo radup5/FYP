@@ -57,6 +57,7 @@ class Exchange(OrderBook):
         self.traders = {}
         self.traders_side = {}
 
+    # TODO: update return for match_order (for order generator)
     def add_order(self, order: Order) -> str | int:
         
         if order.price % ticksize != 0:
@@ -64,14 +65,6 @@ class Exchange(OrderBook):
         if order.price < exchange_min_price or order.price > exchange_max_price:
             return "price out of bound"
         
-        # only one active order for each trader
-        if order.trader_id in self.traders:
-            # cancel old order before adding the new one
-            self.cancel_order(self.traders[order.trader_id], order.trader_id)
-            # self.traders.pop(order.trader_id)
-            # self.traders_side.pop((order.trader_id, OrderSide.BUY), None)
-            # self.traders_side.pop((order.trader_id, OrderSide.SELL), None)
-
         order.id = self.next_order_id
         self.next_order_id += 1
 
@@ -80,8 +73,8 @@ class Exchange(OrderBook):
                 order.price = self.sell_side.best_price
                 counterparty_id, order_id = self.sell_side.match_order()
 
-                self.traders.pop(counterparty_id)
-                self.traders_side.pop((counterparty_id, OrderSide.SELL))
+                self.traders[counterparty_id].remove(order_id)
+                self.traders_side[(counterparty_id, OrderSide.SELL)].remove(order_id)
 
                 return "trade matched"
                 # notify couterparty about a matched trade
@@ -92,33 +85,32 @@ class Exchange(OrderBook):
                 order.price = self.buy_side.best_price
                 counterparty_id, order_id = self.buy_side.match_order()
 
-                self.traders.pop(counterparty_id)
-                self.traders_side.pop((counterparty_id, OrderSide.BUY))
+                self.traders[counterparty_id].remove(order_id)
+                self.traders_side[(counterparty_id, OrderSide.BUY)].remove(order_id)
 
                 return "trade matched"
                 # notify couterparty about a matched trade
             else:                                                                              # limit order
                 self.sell_side.add_order(order)
         
-        self.traders[order.trader_id] = order.id
-        self.traders_side[(order.trader_id, order.side)] = order.id
+        if order.trader_id in self.traders:
+            self.traders[order.trader_id].append(order.id)
+        else:
+            self.traders[order.trader_id] = [order.id]
+        if (order.trader_id, order.side) in self.traders_side:
+            self.traders_side[(order.trader_id, order.side)].append(order.id)
+        else:
+            self.traders_side[(order.trader_id, order.side)] = [order.id]
+
         return order.id
                 
 
-    def add_market_order(self, order: Order) -> str:
+    def add_market_order(self, order: Order) -> str | int:
 
         if order.price % ticksize != 0:
             return "price not divisible by the ticksize"
         if order.price < exchange_min_price or order.price > exchange_max_price:
             return "price out of bound"
-
-        # only one active order for each trader
-        if order.trader_id in self.traders:
-            # cancel old order before adding the new one
-            self.cancel_order(self.traders[order.trader_id], order.trader_id)
-            # self.traders.pop(order.trader_id)
-            # self.traders_side.pop((order.trader_id, OrderSide.BUY), None)
-            # self.traders_side.pop((order.trader_id, OrderSide.SELL), None)
 
         order.id = self.next_order_id
         self.next_order_id += 1
@@ -127,18 +119,24 @@ class Exchange(OrderBook):
             order.price = self.sell_side.best_price
             counterparty_id, order_id = self.sell_side.match_order()
 
-            self.traders.pop(counterparty_id)
-            self.traders_side.pop((counterparty_id, OrderSide.SELL))
+            self.traders[counterparty_id].remove(order_id)
+            self.traders_side[(counterparty_id, OrderSide.SELL)].remove(order_id)
 
+            # if trader is the order generator trader, return counterparty_id
+            if order.trader_id == 0:
+                return counterparty_id, order_id
             return "trade matched"
             # notify couterparty about a matched trade
         else:
             order.price = self.buy_side.best_price
             counterparty_id, order_id = self.buy_side.match_order()
 
-            self.traders.pop(counterparty_id)
-            self.traders_side.pop((counterparty_id, OrderSide.BUY))
+            self.traders[counterparty_id].remove(order_id)
+            self.traders_side[(counterparty_id, OrderSide.BUY)].remove(order_id)
 
+            # if trader is the order generator trader, return counterparty_id
+            if order.trader_id == 0:
+                return counterparty_id, order_id
             return "trade matched"
             # notify couterparty about a matched trade
 
@@ -150,50 +148,45 @@ class Exchange(OrderBook):
         if order.price < exchange_min_price or order.price > exchange_max_price:
             return "price out of bound"
         
-        # only one active order for each trader
-        if order.trader_id in self.traders:
-            # cancel old order before adding the new one
-            self.cancel_order(self.traders[order.trader_id], order.trader_id)
-            # self.traders.pop(order.trader_id)
-            # self.traders_side.pop((order.trader_id, OrderSide.BUY), None)
-            # self.traders_side.pop((order.trader_id, OrderSide.SELL), None)
-
         order.id = self.next_order_id
         self.next_order_id += 1
 
+        # TODO: elif instead of else
         if order.side == OrderSide.BUY:
             self.buy_side.add_order(order)
         else:
             self.sell_side.add_order(order)
         
-        self.traders[order.trader_id] = order.id
-        self.traders_side[(order.trader_id, order.side)] = order.id
+        if order.trader_id in self.traders:
+            self.traders[order.trader_id].append(order.id)
+        else:
+            self.traders[order.trader_id] = [order.id]
+        if (order.trader_id, order.side) in self.traders_side:
+            self.traders_side[(order.trader_id, order.side)].append(order.id)
+        else:
+            self.traders_side[(order.trader_id, order.side)] = [order.id]
+
         return order.id
 
 
     def cancel_order(self, order_id: int, trader_id: int) -> str | None:
 
-        # TODO: add dict of orders (trader_id -> list of order_ids)
-        # TODO: check trader id when cancelling order
-        # if trader_id != self.trader_orders[order_id]: sau not in pt mai multe trade-uri
-        #     raise Exception("Trader id does not match order id") # notify trader invalid action
-        
         if trader_id not in self.traders:
             return "trader does not exist"
 
-        if order_id != self.traders[trader_id]:
+        if order_id not in self.traders[trader_id]:
             return "trader id does not match order id"
 
-        if (trader_id, OrderSide.BUY) in self.traders_side:
+        if (trader_id, OrderSide.BUY) in self.traders_side and order_id in self.traders_side[(trader_id, OrderSide.BUY)]:
             self.buy_side.cancel_order(order_id, trader_id)
-            self.traders_side.pop((trader_id, OrderSide.BUY))
-        elif (trader_id, OrderSide.SELL) in self.traders_side:
+            self.traders_side[(trader_id, OrderSide.BUY)].remove(order_id)
+        elif (trader_id, OrderSide.SELL) in self.traders_side and order_id in self.traders_side[(trader_id, OrderSide.SELL)]:
             self.sell_side.cancel_order(order_id, trader_id)
-            self.traders_side.pop((trader_id, OrderSide.SELL))
+            self.traders_side[(trader_id, OrderSide.SELL)].remove(order_id)
         # else:
         #     return "order does not exist"
 
-        self.traders.pop(trader_id)
+        self.traders[trader_id].remove(order_id)
 
 
     def get_best_price(self, side: OrderSide) -> int:
