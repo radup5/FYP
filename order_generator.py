@@ -12,6 +12,11 @@ import matplotlib.pyplot as plt
 ORDER_GENERATOR_TRADER = 0
 
 
+
+last_p_b = None
+last_p_a = None
+
+
 def get_lambda(i: int) -> float:
     if i == 1:
         return 1.85
@@ -64,17 +69,11 @@ def get_ask_price(X: np.ndarray) -> int:
 
 def get_rates(X: np.ndarray, p_b: int, p_a: int) -> list:
 
-    # TODO: maybe delete this after getting initial state LOB data
-    if p_b == None and p_a != None:
-        p_b = p_a - 1 # TODO: exchange_min instead?
-    elif p_b != None and p_a == None:
-        p_a = p_b + 1 # TODO: exchange_max instead?
-    elif p_b == None and p_a == None:
-        n = len(X)
-        # TODO: exchange_min/max instead?
-        p_b = n // 2
-        p_a = p_b + 1
-
+    global last_p_b, last_p_a
+    if p_b == None:
+        p_b = last_p_b
+    if p_a == None:
+        p_a = last_p_a
 
     # constants:
     MAX_i = 5
@@ -152,6 +151,9 @@ def simulate_n_seconds(X: np.ndarray, orders: dict, prices: dict, exchange: Exch
     p_b = get_bid_price(X)
     p_a = get_ask_price(X)
     rates = get_rates(X, p_b, p_a)
+    global last_p_b, last_p_a
+    last_p_b = p_b
+    last_p_a = p_a
     sum_rates = get_rates_sum(rates)
 
     simulation_time = 0
@@ -244,7 +246,12 @@ def simulate_n_seconds(X: np.ndarray, orders: dict, prices: dict, exchange: Exch
         p_b = get_bid_price(X)
         p_a = get_ask_price(X)
         rates = get_rates(X, p_b, p_a)
+        if p_b != None:
+            last_p_b = p_b
+        if p_a != None:
+            last_p_a = p_a
         sum_rates = get_rates_sum(rates)
+
         delta_t = np.random.exponential(1 / sum_rates)
         simulation_time += delta_t
     
