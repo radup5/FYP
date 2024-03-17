@@ -210,28 +210,32 @@ def simulate_n_seconds(X: np.ndarray, orders: dict, prices: dict, exchange: Exch
                 price = order.price
                 orders.pop(order_id)
                 prices[price].remove(order_id)
-        elif event == 'cancel_buy_order' and p_b != None:
+        elif event == 'cancel_buy_order':
+            if p_b == None:
+                raise Exception("There are no buy orders: invalid cancel order!")
             # TODO: check price < p_a
-            X[price] += 1
+            if len(prices[price]) != 0:
+                X[price] += 1
 
-            # TODO: check len(prices[price]) == 0
-            # TODO: check random order is buy
-            random_order_id = prices[price][np.random.randint(len(prices[price]))]
-            order_id = random_order_id
-            trader_id = ORDER_GENERATOR_TRADER
+                # TODO: check random order is buy
+                random_order_id = prices[price][np.random.randint(len(prices[price]))]
+                order_id = random_order_id
+                trader_id = ORDER_GENERATOR_TRADER
 
-            exchange.cancel_order(order_id, trader_id)
-        elif event == 'cancel_sell_order' and p_a != None:
+                exchange.cancel_order(order_id, trader_id)
+        elif event == 'cancel_sell_order':
+            if p_a == None:
+                raise Exception("There are no sell orders: invalid cancel order!")
             # TODO: check price > p_b
-            X[price] -= 1
+            if len(prices[price]) != 0:
+                X[price] -= 1
 
-            # TODO: check len(prices[price]) == 0
-            # TODO: check random order is sell
-            random_order_id = prices[price][np.random.randint(len(prices[price]))]
-            order_id = random_order_id
-            trader_id = ORDER_GENERATOR_TRADER
+                # TODO: check random order is sell
+                random_order_id = prices[price][np.random.randint(len(prices[price]))]
+                order_id = random_order_id
+                trader_id = ORDER_GENERATOR_TRADER
 
-            exchange.cancel_order(order_id, trader_id)
+                exchange.cancel_order(order_id, trader_id)
         
         if p_b != None and p_a != None:
             mid_prices.append((p_b + p_a) / 2)
@@ -270,45 +274,45 @@ if __name__ == '__main__':
     n = 1000
 
     # init #1
-    # X[95] = -1
-    # price = 95
-    # order = Order(OrderSide.BUY, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
-    # order_id = exchange.add_limit_order(order)
-    # orders[order_id] = order
-    # prices[price] = [order_id]
+    X[95] = -1
+    price = 95
+    order = Order(OrderSide.BUY, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
+    order_id = exchange.add_limit_order(order)
+    orders[order_id] = order
+    prices[price] = [order_id]
 
 
-    # X[105] = 1
-    # price = 105
-    # order = Order(OrderSide.SELL, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
-    # order_id = exchange.add_limit_order(order)
-    # orders[order_id] = order
-    # prices[price] = [order_id]
+    X[105] = 1
+    price = 105
+    order = Order(OrderSide.SELL, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
+    order_id = exchange.add_limit_order(order)
+    orders[order_id] = order
+    prices[price] = [order_id]
 
-    # init #2
-    #2244500	200	2241100	287	2244900	100	2241000	77	2245000	5	2240900	100	2247500	10	2240000	10	2248000	250	2236500	2
-    buy_prices = [223, 222, 221, 220, 219]
-    sell_prices = [224, 225, 226, 227, 228]
-    buy_volumes = [200, 100, 5, 10, 250]
-    sell_volumes = [287, 77, 100, 10, 2]
-    for i in range(5):
-        prices[buy_prices[i]] = []
-        for j in range(buy_volumes[i]):
-            price = buy_prices[i]
-            X[price] -= 1
-            order = Order(OrderSide.BUY, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
-            order_id = exchange.add_limit_order(order)
-            orders[order_id] = order
-            prices[price].append(order_id)
+    # # init #2
+    # #2244500	200	2241100	287	2244900	100	2241000	77	2245000	5	2240900	100	2247500	10	2240000	10	2248000	250	2236500	2
+    # buy_prices = [223, 222, 221, 220, 219]
+    # sell_prices = [224, 225, 226, 227, 228]
+    # buy_volumes = [200, 100, 5, 10, 250]
+    # sell_volumes = [287, 77, 100, 10, 2]
+    # for i in range(5):
+    #     prices[buy_prices[i]] = []
+    #     for j in range(buy_volumes[i]):
+    #         price = buy_prices[i]
+    #         X[price] -= 1
+    #         order = Order(OrderSide.BUY, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
+    #         order_id = exchange.add_limit_order(order)
+    #         orders[order_id] = order
+    #         prices[price].append(order_id)
 
-        prices[sell_prices[i]] = []
-        for j in range(sell_volumes[i]):
-            price = sell_prices[i]
-            X[price] += 1
-            order = Order(OrderSide.SELL, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
-            order_id = exchange.add_limit_order(order)
-            orders[order_id] = order
-            prices[price].append(order_id)
+    #     prices[sell_prices[i]] = []
+    #     for j in range(sell_volumes[i]):
+    #         price = sell_prices[i]
+    #         X[price] += 1
+    #         order = Order(OrderSide.SELL, price, 1, datetime.datetime.now(), ORDER_GENERATOR_TRADER)
+    #         order_id = exchange.add_limit_order(order)
+    #         orders[order_id] = order
+    #         prices[price].append(order_id)
 
 
     X, orders, prices, mid_prices = simulate_n_seconds(X, orders, prices, exchange, time, n)
