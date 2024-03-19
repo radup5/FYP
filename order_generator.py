@@ -63,7 +63,7 @@ def get_ask_price(X: np.ndarray) -> int:
     asks = np.where(X>0)[0]
     if len(asks) > 0:
         return asks[0]
-    # if the Limit Order Book is empty on the buy side
+    # if the Limit Order Book is empty on the sell side
     return None
 
 
@@ -223,6 +223,8 @@ def simulate_n_seconds(X: np.ndarray, orders: dict, prices: dict, exchange: Exch
                 trader_id = ORDER_GENERATOR_TRADER
 
                 exchange.cancel_order(order_id, trader_id)
+                orders.pop(order_id)
+                prices[price].remove(order_id)
         elif event == 'cancel_sell_order':
             if p_a == None:
                 raise Exception("There are no sell orders: invalid cancel order!")
@@ -236,6 +238,8 @@ def simulate_n_seconds(X: np.ndarray, orders: dict, prices: dict, exchange: Exch
                 trader_id = ORDER_GENERATOR_TRADER
 
                 exchange.cancel_order(order_id, trader_id)
+                orders.pop(order_id)
+                prices[price].remove(order_id)
         
         if p_b != None and p_a != None:
             mid_prices.append((p_b + p_a) / 2)
