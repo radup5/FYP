@@ -1,8 +1,8 @@
-from exchange import exchange_min_price, exchange_max_price, ticksize, Order, OrderSide, OrderBook, OrderBookSideI
+from exchange import Order, OrderSide, OrderBook, OrderBookSideInterface
 
 
 
-class OrderBookSide(OrderBookSideI):
+class OrderBookSide(OrderBookSideInterface):
 
     def __init__(self, side: OrderSide) -> None:
         self.side = side
@@ -73,12 +73,3 @@ class OrderBookSide(OrderBookSideI):
         self.build_lob()
         
         return counterparty_id, order_id
-
-
-
-# class OrderBook:
-
-#     def __init__(self) -> None:
-#         self.buy_side = OrderBookSide(OrderSide.BUY)
-#         self.sell_side = OrderBookSide(OrderSide.SELL)
-#         self.next_order_id = 0

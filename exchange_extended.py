@@ -1,13 +1,6 @@
 from enum import Enum
 import datetime
-
-
-
-exchange_min_price = 0
-exchange_max_price = 1000
-# to avoid floting point error, it is suggested 
-# to use int values for the ticksize
-ticksize = 1
+from config import *
 
 
 
@@ -28,7 +21,7 @@ class Order:
 
 
 
-class OrderBookSideI:
+class OrderBookSideInterface:
 
     def add_order(self, order: Order) -> None:
         pass
@@ -43,7 +36,7 @@ class OrderBookSideI:
 
 class OrderBook:
 
-    def __init__(self, buy_side: OrderBookSideI, sell_side: OrderBookSideI) -> None:
+    def __init__(self, buy_side: OrderBookSideInterface, sell_side: OrderBookSideInterface) -> None:
         self.buy_side = buy_side
         self.sell_side = sell_side
         self.next_order_id = 0
@@ -52,7 +45,7 @@ class OrderBook:
 
 class Exchange(OrderBook):
 
-    def __init__(self, buy_side: OrderBookSideI, sell_side: OrderBookSideI):
+    def __init__(self, buy_side: OrderBookSideInterface, sell_side: OrderBookSideInterface) -> None:
         super().__init__(buy_side, sell_side)
         self.traders = {}
         self.traders_side = {}
@@ -60,9 +53,9 @@ class Exchange(OrderBook):
     # TODO: update return for match_order (for order generator)
     def add_order(self, order: Order) -> str | int:
         
-        if order.price % ticksize != 0:
+        if order.price % TICKSIZE != 0:
             return "price not divisible by the ticksize"
-        if order.price < exchange_min_price or order.price > exchange_max_price:
+        if order.price < EXCHANGE_MIN_PRICE or order.price > EXCHANGE_MAX_PRICE:
             return "price out of bound"
         
         order.id = self.next_order_id
@@ -107,9 +100,9 @@ class Exchange(OrderBook):
 
     def add_market_order(self, order: Order) -> str | int:
 
-        if order.price % ticksize != 0:
+        if order.price % TICKSIZE != 0:
             return "price not divisible by the ticksize"
-        if order.price < exchange_min_price or order.price > exchange_max_price:
+        if order.price < EXCHANGE_MIN_PRICE or order.price > EXCHANGE_MAX_PRICE:
             return "price out of bound"
 
         order.id = self.next_order_id
@@ -143,9 +136,9 @@ class Exchange(OrderBook):
 
     def add_limit_order(self, order: Order) -> str | int:
 
-        if order.price % ticksize != 0:
+        if order.price % TICKSIZE != 0:
             return "price not divisible by the ticksize"
-        if order.price < exchange_min_price or order.price > exchange_max_price:
+        if order.price < EXCHANGE_MIN_PRICE or order.price > EXCHANGE_MAX_PRICE:
             return "price out of bound"
         
         order.id = self.next_order_id
