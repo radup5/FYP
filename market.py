@@ -3,6 +3,7 @@ import datetime
 
 from exchange_extended import Exchange, OrderSide, Order
 import orderbook_final
+from config import *
 
 # TODO: remove matplotlib
 import matplotlib.pyplot as plt
@@ -131,8 +132,7 @@ class MarketPoissonProcesses(MarketInterface):
     
 
     def initialize_lob(self, exchange: Exchange, time: datetime.datetime) -> np.ndarray:
-        # TODO: replace with exchange_max_price
-        X = np.zeros(1001)
+        X = np.zeros(EXCHANGE_MAX_PRICE + 1, dtype=int)
 
         # TODO: price to index conversion
         buy_prices = [223, 222, 221, 220, 219]
@@ -184,8 +184,7 @@ class MarketPoissonProcesses(MarketInterface):
             if self.p_b != exchange.buy_side.best_price or self.p_a != exchange.sell_side.best_price:
                 raise Exception("Invalid best price!")
             
-            # TODO: replace 1000 with exchange_max_price
-            if (self.p_b != None and self.p_b + MAX_LEVEL >= 1000) or (self.p_a != None and self.p_a - MAX_LEVEL <= 0):
+            if (self.p_b != None and self.p_b + MAX_LEVEL >= EXCHANGE_MAX_PRICE) or (self.p_a != None and self.p_a - MAX_LEVEL <= EXCHANGE_MIN_PRICE):
                 raise Exception("Price levels are out of range!")
 
             event, price = self.__get_random_event(rates, sum_rates)
@@ -337,8 +336,7 @@ class MarketPoissonProcesses(MarketInterface):
             if self.p_b != exchange.buy_side.best_price or self.p_a != exchange.sell_side.best_price:
                 raise Exception("Invalid best price!")
             
-            # TODO: replace 1000 with exchange_max_price
-            if (self.p_b != None and self.p_b + MAX_LEVEL >= 1000) or (self.p_a != None and self.p_a - MAX_LEVEL <= 0):
+            if (self.p_b != None and self.p_b + MAX_LEVEL >= EXCHANGE_MAX_PRICE) or (self.p_a != None and self.p_a - MAX_LEVEL <= EXCHANGE_MIN_PRICE):
                 raise Exception("Price levels are out of range!")
 
             event, price = self.__get_random_event(rates, sum_rates)

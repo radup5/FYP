@@ -128,7 +128,7 @@ class Exchange(OrderBook):
             self.traders_side[(counterparty_id, OrderSide.BUY)].remove(order_id)
 
             # if trader is the order generator trader, return counterparty_id
-            if order.trader_id == 0:
+            if order.trader_id == 0: # TODO: change to match_notif for market
                 return counterparty_id, order_id
             return "trade matched"
             # notify couterparty about a matched trade
