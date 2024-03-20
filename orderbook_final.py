@@ -1,4 +1,5 @@
-from exchange_extended import exchange_min_price, exchange_max_price, ticksize, Order, OrderSide, OrderBook, OrderBookSideI
+from exchange_extended import Order, OrderSide, OrderBookSideInterface
+from config import *
 
 
 
@@ -24,20 +25,20 @@ class PriceLevel:
 
 
 
-class OrderBookSide(OrderBookSideI):
+class OrderBookSide(OrderBookSideInterface):
 
     def __init__(self, side: OrderSide) -> None:
 
         self.side = side
         # each index in the limit_order_book list corresponds to a price level
-        self.limit_order_book = [None] * ((exchange_max_price - exchange_min_price) // ticksize + 1)
+        self.limit_order_book = [None] * ((EXCHANGE_MAX_PRICE - EXCHANGE_MIN_PRICE) // TICKSIZE + 1)
         self.best_price = None
 
         # id -> OrderNode
         self.order_nodes = {}
 
     def __price_to_index(self, price: int) -> int:
-        return (price - exchange_min_price) // ticksize
+        return (price - EXCHANGE_MIN_PRICE) // TICKSIZE
 
     def add_order(self, order: Order) -> None:
         # get index in limit_order_book
@@ -169,12 +170,3 @@ class OrderBookSide(OrderBookSideI):
         del matchingOrderNode
         del matchingOrder
         return counterparty_id, order_id
-
-
-
-# class OrderBook:
-
-#     def __init__(self) -> None:
-#         self.buy_side = OrderBookSide(OrderSide.BUY)
-#         self.sell_side = OrderBookSide(OrderSide.SELL)
-#         self.next_order_id = 0

@@ -2,7 +2,7 @@ import datetime
 import pytest
 import orderbook_lists as e
 from unittest.mock import Mock
-
+from config import *
 
 
 # @pytest.fixture
@@ -206,7 +206,7 @@ def test_add_multiple_orders_different_price_linked_list(empty_OrderBookSide):
 
 
 def test_add_multiple_orders_different_price_ticksize(mocker, empty_OrderBookSide):
-    mocker.patch("orderbook_lists.ticksize", new=2)
+    mocker.patch("config.TICKSIZE", new=2)
     order_book_side = empty_OrderBookSide
 
     prices = [48, 52, 50, 52]
@@ -217,8 +217,8 @@ def test_add_multiple_orders_different_price_ticksize(mocker, empty_OrderBookSid
     
     quantity = [1, 1, 2]
     for i, price in enumerate([48, 50, 52]):
-        assert order_book_side.limit_order_book[price // e.ticksize].price == price
-        assert order_book_side.limit_order_book[price // e.ticksize].quantity == quantity[i]
+        assert order_book_side.limit_order_book[price // TICKSIZE].price == price
+        assert order_book_side.limit_order_book[price // TICKSIZE].quantity == quantity[i]
 
 
 

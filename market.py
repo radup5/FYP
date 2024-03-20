@@ -2,7 +2,7 @@ import numpy as np
 import datetime
 
 from exchange_extended import Exchange, OrderSide, Order
-import orderbook_lists
+import orderbook_final
 
 # TODO: remove matplotlib
 import matplotlib.pyplot as plt
@@ -472,8 +472,8 @@ class MarketPoissonProcesses(MarketInterface):
 
 
 if __name__ == '__main__':
-    buy_side = orderbook_lists.OrderBookSide(OrderSide.BUY)
-    sell_side = orderbook_lists.OrderBookSide(OrderSide.SELL)
+    buy_side = orderbook_final.OrderBookSide(OrderSide.BUY)
+    sell_side = orderbook_final.OrderBookSide(OrderSide.SELL)
     exchange = Exchange(buy_side, sell_side)
     
     market = MarketPoissonProcesses()
