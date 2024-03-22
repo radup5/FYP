@@ -110,3 +110,56 @@ class MarketMakingTrader(Trader):
         elif sell_order.price > best_ask:
             self._send_cancel_order(sell_order.id, time)
             self._send_limit_order(OrderSide.SELL, best_ask, time)
+
+
+
+class TrendFollowingTrader(Trader):
+        
+        def __init__(self, trader_id: int, cash: int, exchange: Exchange, window_size: int) -> None:
+            super().__init__(trader_id, cash, exchange)
+            self.window_size = window_size
+            self.price_history = []
+        
+    
+        def strategy(self, lob_state: np.ndarray, time: datetime.datetime) -> None:
+            mid_price = (self.exchange.buy_side.get_best_price() + self.exchange.sell_side.get_best_price()) / 2
+            self.price_history.append(mid_price)
+            
+            if len(self.price_history) > self.window_size:
+                self.price_history.pop(0)
+            
+            if len(self.price_history) == self.window_size:
+                # TODO: test speed: sum(self.price_history) / len(self.price_history) vs np.mean(self.price_history)
+                moving_average = np.mean(self.price_history)
+
+                # TODO: add std?
+                if moving_average < self.exchange.buy_side.get_best_price():
+                    self._send_market_order(OrderSide.BUY, time)
+                if moving_average > self.exchange.sell_side.get_best_price():
+                    self._send_market_order(OrderSide.SELL, time)
+
+
+
+
+class MeanReversionTrader(Trader):
+    
+    def __init__(self, trader_id: int, cash: int, exchange: Exchange, window_size: int) -> None:
+        super().__init__(trader_id, cash, exchange)
+        self.window_size = window_size
+        self.price_history = []
+
+
+    def strategy(self, lob_state: np.ndarray, time: datetime.datetime) -> None:
+        mid_price = (self.exchange.buy_side.get_best_price() + self.exchange.sell_side.get_best_price()) / 2
+        self.price_history.append(mid_price)
+
+        if len(self.price_history) > self.window_size:
+            self.price_history.pop(0)
+
+        if len(self.price_history) == self.window_size:
+            moving_average = np.mean(self.price_history)
+
+            if moving_average > self.exchange.buy_side.get_best_price():
+                self._send_market_order(OrderSide.BUY, time)
+            if moving_average < self.exchange.sell_side.get_best_price():
+                self._send_market_order(OrderSide.SELL, time)
